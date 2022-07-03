@@ -99,13 +99,22 @@ runModuleBuilderT s (ModuleBuilderT m)
   = second (getSnocList . builderDefs)
   <$> runStateT m s
 
+evalModuleBuilder :: ModuleBuilderState -> ModuleBuilder a -> a
+evalModuleBuilder s m = fst $ runModuleBuilder s m
+
 -- | Evaluate 'ModuleBuilder' to a list of definitions
 execModuleBuilder :: ModuleBuilderState -> ModuleBuilder a -> [Definition]
 execModuleBuilder s m = snd $ runModuleBuilder s m
 
+execFreshModuleBuilder :: ModuleBuilder a -> [Definition]
+execFreshModuleBuilder = execModuleBuilder emptyModuleBuilder
+
 -- | Evaluate 'ModuleBuilderT' to a list of definitions
 execModuleBuilderT :: Monad m => ModuleBuilderState -> ModuleBuilderT m a -> m [Definition]
 execModuleBuilderT s m = snd <$> runModuleBuilderT s m
+
+execFreshModuleBuilderT :: Monad m => ModuleBuilderT m a -> m [Definition]
+execFreshModuleBuilderT = execModuleBuilderT emptyModuleBuilder
 
 emitDefn :: MonadModuleBuilder m => Definition -> m ()
 emitDefn def = liftModuleState $ modify $ \s -> s { builderDefs = builderDefs s `snoc` def }

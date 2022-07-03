@@ -100,11 +100,19 @@ emptyIRBuilder = IRBuilderState
 runIRBuilder :: IRBuilderState -> IRBuilder a -> (a, [BasicBlock])
 runIRBuilder s m = runIdentity $ runIRBuilderT s m
 
+-- | Evaluate IRBuilder to a result and a list of basic blocks
+runFreshIRBuilder :: IRBuilder a -> (a, [BasicBlock])
+runFreshIRBuilder = runIRBuilder emptyIRBuilder
+
 -- | Evaluate IRBuilderT to a result and a list of basic blocks
 runIRBuilderT :: Monad m => IRBuilderState -> IRBuilderT m a -> m (a, [BasicBlock])
 runIRBuilderT s m
   = second (getSnocList . builderBlocks)
   <$> runStateT (unIRBuilderT $ m <* block) s
+
+-- | Evaluate IRBuilder to a result and a list of basic blocks
+runFreshIRBuilderT :: Monad m => IRBuilderT m a -> m (a, [BasicBlock])
+runFreshIRBuilderT = runIRBuilderT emptyIRBuilder
 
 -- | Evaluate IRBuilder to a list of basic blocks
 execIRBuilder :: IRBuilderState -> IRBuilder a -> [BasicBlock]
